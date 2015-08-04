@@ -6,3 +6,4 @@ class AddConfirmableToUsers < ActiveRecord::Migration
     add_column :users, :unconfirmed_email, :string
   end
 end
+

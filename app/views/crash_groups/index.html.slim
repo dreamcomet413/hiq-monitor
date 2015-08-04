@@ -1,0 +1,33 @@
+h3 Crash Groups
+
+table.table.table-border
+  thead
+    tr
+      td Id
+      td file
+      td status
+      td crash_class
+      td bundle_version
+      td last_crash_at
+      td app_version_id
+      td method
+      td number_of_crashes
+      td line
+      td fixed
+      td hockey_created_at
+  tbody
+    - @crash_groups.each do |crash_group|
+      tr
+        td= link_to crash_group.hockey_id, crash_group
+        td= crash_group.file
+        td= crash_status_tag crash_group.status
+        td= crash_group.crash_class
+        td= crash_group.bundle_version
+        td= crash_group.last_crash_at
+        td= crash_group.app_version_id
+        td= crash_group.method
+        td= crash_group.number_of_crashes
+        td= crash_group.line
+        td= crash_group.fixed
+        td= crash_group.hockey_created_at.to_date
+    

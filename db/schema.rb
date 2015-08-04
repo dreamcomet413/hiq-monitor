@@ -11,10 +11,50 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150803065816) do
+ActiveRecord::Schema.define(version: 20150803070108) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
+
+  create_table "crash_groups", force: :cascade do |t|
+    t.string   "file"
+    t.string   "reason"
+    t.string   "status"
+    t.string   "hockey_id"
+    t.string   "crash_class"
+    t.string   "bundle_version"
+    t.string   "last_crash_at"
+    t.string   "app_version_id"
+    t.string   "method"
+    t.string   "bundle_short_version"
+    t.integer  "number_of_crashes"
+    t.integer  "line"
+    t.boolean  "fixed"
+    t.datetime "hockey_updated_at"
+    t.datetime "hockey_created_at"
+    t.datetime "created_at",           null: false
+    t.datetime "updated_at",           null: false
+  end
+
+  create_table "crashes", force: :cascade do |t|
+    t.integer  "crash_group_id"
+    t.string   "hockey_id"
+    t.integer  "hockey_app_id"
+    t.integer  "hockey_version_id"
+    t.datetime "hockey_created_at"
+    t.datetime "hockey_updated_at"
+    t.integer  "hockey_crash_group_id", limit: 8
+    t.string   "oem"
+    t.string   "model"
+    t.integer  "bundle_version"
+    t.string   "bundle_short_version"
+    t.string   "os_version"
+    t.boolean  "jail_break"
+    t.string   "contact"
+    t.string   "user"
+    t.datetime "created_at",                      null: false
+    t.datetime "updated_at",                      null: false
+  end
 
   create_table "users", force: :cascade do |t|
     t.string   "email",                  default: "", null: false

@@ -8,6 +8,7 @@
 <% end %>
 <% if user_signed_in? %>
   <% if current_user.try(:admin?) %>
-    <li><%= link_to 'Users', users_path %></li>
+    <li><%= link_to 'Crash Groups', crash_groups_path %></li>
+    <li><%= link_to 'Crashes', crashes_path %></li>
   <% end %>
 <% end %>
