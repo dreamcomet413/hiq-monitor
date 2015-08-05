@@ -27,6 +27,10 @@ rake db:seed
 
 Documentation and Support
 -------------------------
+```
+username: user@example.com
+password: changeme
+```
 
 Issues
 -------------
