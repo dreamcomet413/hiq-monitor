@@ -2,7 +2,7 @@ class CreateCrashGroups < ActiveRecord::Migration
   def change
     create_table :crash_groups do |t|
       t.string :file
-      t.string :reason
+      t.integer :reason
       t.string :status
       t.integer :hockey_id
       t.string :crash_class
