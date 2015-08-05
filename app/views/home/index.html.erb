@@ -2,56 +2,113 @@
 
 <div class="container">
   <div class="row">
-    <div class="col-sm-6">
-      <div class="panel panel-default">
-        <div class="panel-body">
-          <div id="pie_chart"></div>
-        </div>
-      </div>
+  <div class="col-sm-5">
+    <div class="panel panel-default">
+    <div class="panel-body">
+      <div id="pie_chart"></div>
     </div>
-    <div class="col-sm-6">
-      <div class="panel panel-default">
-        <div class="panel-body">
-          
-        </div>
-      </div>
     </div>
+  </div>
+  <div class="col-sm-7">
+    <div class="panel panel-default">
+    <div class="panel-body">
+      <div id="line_chart"></div>
+    </div>
+    </div>
+  </div>
   </div>
 </div>
 
 <script>
 
   $(function () {
-    $('#pie_chart').highcharts({
+  $('#pie_chart').highcharts({
+    chart: {
+    plotBackgroundColor: null,
+    plotBorderWidth: null,
+    plotShadow: false,
+    type: 'pie'
+    },
+    title: {
+    text: 'Crashes per each Crash Group'
+    },
+    tooltip: {
+    pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
+    },
+    plotOptions: {
+    pie: {
+      allowPointSelect: true,
+      cursor: 'pointer',
+      dataLabels: {
+      enabled: false,
+      format: '<b>{point.name}</b>: {point.percentage:.1f} %',
+      style: {
+        color: (Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black'
+      }
+      }
+    }
+    },
+    series: [{
+    name: "Crashes",
+    colorByPoint: true,
+    data: <%= raw @crash_group_data.to_json %>
+    }]
+  });
+
+  $('#line_chart').highcharts({
       chart: {
-        plotBackgroundColor: null,
-        plotBorderWidth: null,
-        plotShadow: false,
-        type: 'pie'
+        type: 'spline'
       },
       title: {
-        text: 'Crashes per each Crash Group'
+        text: 'Monthly Average Temperature'
+      },
+      subtitle: {
+        text: 'Source: WorldClimate.com'
+      },
+      xAxis: {
+        categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+          'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+      },
+      yAxis: {
+        title: {
+          text: 'Temperature'
+        },
+        labels: {
+          formatter: function () {
+            return this.value + '°';
+          }
+        }
       },
       tooltip: {
-        pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
+        crosshairs: true,
+        shared: true
       },
       plotOptions: {
-        pie: {
-          allowPointSelect: true,
-          cursor: 'pointer',
-          dataLabels: {
-            enabled: false,
-            format: '<b>{point.name}</b>: {point.percentage:.1f} %',
-            style: {
-              color: (Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black'
-            }
+        spline: {
+          marker: {
+            radius: 4,
+            lineColor: '#666666',
+            lineWidth: 1
           }
         }
       },
       series: [{
-        name: "Crashes",
-        colorByPoint: true,
-        data: <%= raw @crash_group_data.to_json %>
+        name: 'Tokyo',
+        marker: {
+          symbol: 'square'
+        },
+        data: [7.0, 6.9, 9.5, 14.5, 18.2, 21.5, 25.2, {
+          y: 26.5,
+        }, 23.3, 18.3, 13.9, 9.6]
+
+      }, {
+        name: 'London',
+        marker: {
+          symbol: 'diamond'
+        },
+        data: [{
+          y: 3.9,
+        }, 4.2, 5.7, 8.5, 11.9, 15.2, 17.0, 16.6, 14.2, 10.3, 6.6, 4.8]
       }]
     });
   });
