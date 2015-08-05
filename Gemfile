@@ -6,8 +6,11 @@ gem 'uglifier', '>= 1.3.0'
 gem 'coffee-rails', '~> 4.1.0'
 gem 'jquery-rails'
 gem 'jbuilder', '~> 2.0'
+gem 'slack-notifier'
 gem 'hockeyapp', github: 'tapptic/hockeyapp'
 gem 'dotenv-rails'
+gem 'jquery-datatables-rails', '~> 3.3.0'
+gem 'whenever', :require => false
 
 group :development, :test do
   gem 'byebug'
@@ -21,7 +24,7 @@ gem 'pundit'
 gem 'simple_form'
 gem 'slim-rails'
 gem 'therubyracer', :platform=>:ruby
-gem 'thin'
+gem 'webrick'
 group :development do
   gem 'better_errors'
   gem 'foreman'

@@ -20,7 +20,7 @@ ActiveRecord::Schema.define(version: 20150803070108) do
     t.string   "file"
     t.string   "reason"
     t.string   "status"
-    t.string   "hockey_id"
+    t.integer  "hockey_id"
     t.string   "crash_class"
     t.string   "bundle_version"
     t.string   "last_crash_at"
@@ -38,12 +38,12 @@ ActiveRecord::Schema.define(version: 20150803070108) do
 
   create_table "crashes", force: :cascade do |t|
     t.integer  "crash_group_id"
-    t.string   "hockey_id"
+    t.integer  "hockey_id"
     t.integer  "hockey_app_id"
     t.integer  "hockey_version_id"
     t.datetime "hockey_created_at"
     t.datetime "hockey_updated_at"
-    t.integer  "hockey_crash_group_id", limit: 8
+    t.integer  "hockey_crash_group_id"
     t.string   "oem"
     t.string   "model"
     t.integer  "bundle_version"
@@ -52,8 +52,8 @@ ActiveRecord::Schema.define(version: 20150803070108) do
     t.boolean  "jail_break"
     t.string   "contact"
     t.string   "user"
-    t.datetime "created_at",                      null: false
-    t.datetime "updated_at",                      null: false
+    t.datetime "created_at",            null: false
+    t.datetime "updated_at",            null: false
   end
 
   create_table "users", force: :cascade do |t|

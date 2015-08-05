@@ -4,7 +4,7 @@ class CreateCrashGroups < ActiveRecord::Migration
       t.string :file
       t.string :reason
       t.string :status
-      t.string :hockey_id
+      t.integer :hockey_id
       t.string :crash_class
       t.string :bundle_version
       t.string :last_crash_at
