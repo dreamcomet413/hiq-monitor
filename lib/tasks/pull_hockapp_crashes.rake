@@ -7,9 +7,9 @@ namespace :hockeyapp do
     app = client.get_apps.first
     crash_groups = client.get_crash_groups app
 
-    notifier = Slack::Notifier.new "https://hooks.slack.com/services/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", 
-                                 channel: '#hockeyapp-notifier',
-                                 username: 'hockeyappnotifier'
+    notifier = Slack::Notifier.new ENV['SLACK_AUTH'], 
+                                 ENV['SALCK_CHANNEL'],
+                                 ENV['SLACK_USERNAME']
 
     new_ids = crash_groups.map(&:id) - CrashGroup.pluck(:hockey_id)
     new_crash_groups = crash_groups.select { |cg| new_ids.include? cg.id }
@@ -59,7 +59,7 @@ namespace :hockeyapp do
         c_new.hockey_created_at = crash.created_at
 
         c_new.save
-        notifier.ping "New Crash #{crash.hockey_id} has been occured in #{crash_group.hockey_id} group.", 
+        notifier.ping "New Crash #{crash.id} has been occured in #{res.id} group.", 
                 icon_url: "http://static.mailchimp.com/web/favicon.png"
       end
     end
