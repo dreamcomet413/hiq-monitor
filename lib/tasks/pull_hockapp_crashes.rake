@@ -7,7 +7,7 @@ namespace :hockeyapp do
     app = client.get_apps.first
     crash_groups = client.get_crash_groups app
 
-    notifier = Slack::Notifier.new "https://hooks.slack.com/services/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", 
+    notifier = Slack::Notifier.new "https://hooks.slack.com/services/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", 
                                  channel: '#hockeyapp-notifier',
                                  username: 'hockeyappnotifier'
 
@@ -43,7 +43,7 @@ namespace :hockeyapp do
 
       new_crashes.each do |crash|
         c_new = Crash.new()
-        c_new.crash_group_id = crash_group.id
+        c_new.crash_group_id = res.id
         c_new.hockey_id = crash.id
         c_new.hockey_version_id = crash.app_version_id
         c_new.hockey_crash_group_id = crash.crash_reason_id

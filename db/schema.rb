@@ -18,7 +18,7 @@ ActiveRecord::Schema.define(version: 20150803070108) do
 
   create_table "crash_groups", force: :cascade do |t|
     t.string   "file"
-    t.string   "reason"
+    t.integer  "reason"
     t.string   "status"
     t.integer  "hockey_id"
     t.string   "crash_class"
