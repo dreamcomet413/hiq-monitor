@@ -2,18 +2,33 @@
 
 <div class="container">
   <div class="row">
-  <div class="col-sm-5">
+    <div class="col-sm-6">
+      <div class="panel panel-default">
+        <div class="panel-body">
+          <div id="crash-group-status-chart"></div>
+        </div>
+      </div>
+    </div>
+    <div class="col-sm-6">
+      <div class="panel panel-default">
+        <div class="panel-body">
+          <div id="crash-group-tags-chart"></div>
+        </div>
+      </div>
+    </div>
+  <div class="col-sm-12">
     <div class="panel panel-default">
-    <div class="panel-body">
-      <div id="pie_chart"></div>
-    </div>
-    </div>
-  </div>
-  <div class="col-sm-7">
-    <div class="panel panel-default">
-    <div class="panel-body">
-      <div id="line_chart"></div>
-    </div>
+      <div class="panel-heading clearfix">
+        <div class="pull-right">
+          <div id="crashes-date-filter" class="pull-right" style="">
+            <i class="glyphicon glyphicon-calendar fa fa-calendar"></i>&nbsp;
+            <span></span> <b class="caret"></b>
+          </div>
+        </div>
+      </div>
+      <div class="panel-body">
+        <div id="crash-line-chart"></div>
+      </div>
     </div>
   </div>
   </div>
@@ -21,84 +36,129 @@
 
 <script>
 
-  $(function () {
-  $('#pie_chart').highcharts({
-    chart: {
-    plotBackgroundColor: null,
-    plotBorderWidth: null,
-    plotShadow: false,
-    type: 'pie'
-    },
-    title: {
-    text: 'Crashes per each Crash Group'
-    },
-    tooltip: {
-    pointFormat: '{series.name}: <b>{point.y}</b>'
-    },
-    plotOptions: {
-    pie: {
-      allowPointSelect: true,
-      cursor: 'pointer',
-      dataLabels: {
-      enabled: true,
-      format: '<b>{point.name}</b>: {point.y}',
-      style: {
-        color: (Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black'
-      }
-      }
-    }
-    },
-    series: [{
-    name: "Crashes",
-    colorByPoint: true,
-    data: <%= raw @crash_group_data.to_json %>
-    }]
-  });
-
-  $('#line_chart').highcharts({
+  $(document).ready(function() {
+    $('#crash-group-status-chart').highcharts({
       chart: {
-        type: 'spline'
+        plotBackgroundColor: null,
+        plotBorderWidth: null,
+        plotShadow: false,
+        type: 'pie'
       },
       title: {
-        text: 'Crashes per each Crash Group'
-      },
-      subtitle: {
-        text: 'Based on the amount of crash'
-      },
-      xAxis: {
-        categories: ['Unresolved', 'Tracked', 'Resolved', 'Ignored']
-      },
-      yAxis: {
-        title: {
-          text: 'Crash Count'
-        },
-        labels: {
-          formatter: function () {
-            return this.value;
-          }
-        }
+        text: 'Crash Group Status Chart'
       },
       tooltip: {
-        crosshairs: true,
-        shared: true
+        pointFormat: '{series.name}: <b>{point.y}</b>'
       },
       plotOptions: {
-        spline: {
-          marker: {
-            radius: 2,
-            lineColor: '#666666',
-            lineWidth: 1
+        pie: {
+          allowPointSelect: true,
+          cursor: 'pointer',
+          dataLabels: {
+            enabled: true,
+            format: '<b>{point.name}</b>: {point.y}',
+            style: {
+              color: (Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black'
+            }
           }
         }
       },
       series: [{
-        name: 'Crashes',
-        marker: {
-          symbol: 'circle'
-        },
+        name: "Crashes",
+        colorByPoint: true,
         data: <%= raw @crash_group_data.to_json %>
-        
       }]
     });
+
+    $('#crash-group-tags-chart').highcharts({
+      chart: {
+        plotBackgroundColor: null,
+        plotBorderWidth: null,
+        plotShadow: false,
+        type: 'pie'
+      },
+      title: {
+        text: 'Crashes Group Clouding'
+      },
+      tooltip: {
+        pointFormat: '{series.name}: <b>{point.y}</b>'
+      },
+      plotOptions: {
+        pie: {
+          allowPointSelect: true,
+          cursor: 'pointer',
+          dataLabels: {
+            enabled: true,
+            format: '<b>{point.name}</b>: {point.y}',
+            style: {
+              color: (Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black'
+            }
+          }
+        }
+      },
+      series: [{
+        name: "Crashes",
+        colorByPoint: true,
+        data: <%= raw @crash_group_clouding.to_json %>
+      }]
+    });
+
+    // Crashes Line Chart
+    var crashes_chart_option = {
+      title: {
+        text: 'Daily Crash Count',
+        x: -20 //center
+      },
+      yAxis: {
+        title: {
+          text: 'Count'
+        },
+        plotLines: [{
+          value: 0,
+          width: 1,
+          color: '#808080'
+        }]
+      },
+      xAxis: {
+        type: 'datetime'
+      },
+      tooltip: {
+        valueSuffix: ' Crashes'
+      },
+      series: [{
+        name: 'Count:  ',
+      }]
+    };
+
+    var renderCrashChart = function(start, end) {
+      $('#crashes-date-filter span').html(start.format('MMMM D, YYYY') + ' - ' + end.format('MMMM D, YYYY'));
+
+      $.ajax('/home/carsh_data', {
+        dataType: 'JSON',
+        data: {
+          from: start.format('YYYY-MM-DD'),
+          to: end.format('YYYY-MM-DD')
+        }
+      })
+      .done(function(data) {
+        crashes_chart_option.series[0].data = data;
+        $('#crash-line-chart').highcharts(crashes_chart_option);
+      })
+      .fail(function(data) {
+        alert('failed to fetch crashes data');
+      })
+    };
+
+    $('#crashes-date-filter').daterangepicker({
+        ranges: {
+           'Last 30 Days': [moment().subtract(30, 'days'), moment()],
+           'Last 60 Days': [moment().subtract(60, 'days'), moment()],
+           'Last 90 Days': [moment().subtract(90, 'days'), moment()],
+           'This Month': [moment().startOf('month'), moment().endOf('month')],
+           'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
+        }
+    }, renderCrashChart);
+
+    renderCrashChart(moment().subtract(30, 'days'), moment().endOf('day'));
   });
 </script>

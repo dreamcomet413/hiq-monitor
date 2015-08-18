@@ -4,31 +4,27 @@ table#datatable.table.table-border
   thead
     tr
       td hockey_id
-      td hockey_app_id
+      td hockey_crash_group_id
       td hockey_version_id
       td hockey_created_at
       td hockey_updated_at
-      td hockey_crash_group_id
       td oem
       td model
       td bundle_version
       td bundle_short_version
       td os_version
       td jail_break
-      td contact
   tbody
     - @crashes.each do |crash|
       tr
         td= crash.hockey_id
-        td= crash.hockey_app_id
+        td= crash.hockey_crash_group_id
         td= crash.hockey_version_id
         td= crash.hockey_created_at
         td= crash.hockey_updated_at
-        td= crash.hockey_crash_group_id
         td= crash.oem
         td= crash.model
         td= crash.bundle_version
         td= crash.bundle_short_version
         td= crash.os_version
         td= crash.jail_break
-        td= crash.contact

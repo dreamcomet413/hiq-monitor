@@ -14,4 +14,7 @@
 //= require jquery_ujs
 //= require bootstrap-sprockets
 //= require dataTables/jquery.dataTables
+//= require moment.min
+//= require daterangepicker
+//= require bootstrap-tagsinput
 //= require_tree .

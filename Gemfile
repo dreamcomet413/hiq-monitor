@@ -7,10 +7,12 @@ gem 'coffee-rails', '~> 4.1.0'
 gem 'jquery-rails'
 gem 'jbuilder', '~> 2.0'
 gem 'slack-notifier'
-gem 'hockeyapp', github: 'tapptic/hockeyapp'
+gem 'hockeyapp', path: 'vendor/gems/hockeyapp'
 gem 'dotenv-rails'
 gem 'jquery-datatables-rails', '~> 3.3.0'
 gem 'whenever', :require => false
+gem 'groupdate'
+gem 'acts-as-taggable-on', '~> 3.4'
 
 group :development, :test do
   gem 'byebug'

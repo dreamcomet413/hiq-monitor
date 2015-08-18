@@ -1,24 +1,27 @@
 h3 Crash Groups
 
-table#datatable.table.table-border
+table#datatable.crash-groups.table.table-border
   thead
     tr
+      td #
       td Id
-      td file
-      td status
-      td crash_class
-      td bundle_version
-      td last_crash_at
-      td app_version_id
-      td method
-      td number_of_crashes
-      td line
-      td fixed
-      td hockey_created_at
+      td File
+      td Status
+      td Crash Class
+      td Bundle Version
+      td Last Crashed At
+      td App Version Id
+      td Method
+      td Number of Crashes
+      td Line
+      td Fixed
+      td Crashed at
+      td Tags
   tbody
     - @crash_groups.each do |crash_group|
       tr
-        td= link_to crash_group.hockey_id, crash_group
+        td= link_to crash_group.id, crash_group
+        td= link_to crash_group.hockey_id, "https://rink.hockeyapp.net/manage/apps/78249/app_versions/#{crash_group.app_version_id}/crash_reasons/#{crash_group.hockey_id}", target: '_blank'
         td= crash_group.file
         td= crash_status_tag crash_group.status
         td= crash_group.crash_class
@@ -30,4 +33,17 @@ table#datatable.table.table-border
         td= crash_group.line
         td= crash_group.fixed
         td= crash_group.hockey_created_at.to_date
-    
+        td
+          input.tags type="text" name="tags" data-id="#{crash_group.id}" data-role="tagsinput" value="#{crash_group.tags.join(',')}"
+
+coffee:
+  $ ->
+    $('.crash-groups').on 'blur', '.bootstrap-tagsinput input', (e) ->
+      $tag = $(this).parents('td').find('.tags')
+      $.ajax(
+        url: "/crash_groups/#{$tag.data('id')}"
+        method: 'PUT'
+        data:
+          tags: $tag.val()
+      ).done (res) ->
+        console.log(res)
