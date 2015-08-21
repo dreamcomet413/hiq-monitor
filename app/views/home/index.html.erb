@@ -37,40 +37,7 @@
 <script>
 
   $(document).ready(function() {
-    $('#crash-group-status-chart').highcharts({
-      chart: {
-        plotBackgroundColor: null,
-        plotBorderWidth: null,
-        plotShadow: false,
-        type: 'pie'
-      },
-      title: {
-        text: 'Crash Group Status Chart'
-      },
-      tooltip: {
-        pointFormat: '{series.name}: <b>{point.y}</b>'
-      },
-      plotOptions: {
-        pie: {
-          allowPointSelect: true,
-          cursor: 'pointer',
-          dataLabels: {
-            enabled: true,
-            format: '<b>{point.name}</b>: {point.y}',
-            style: {
-              color: (Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black'
-            }
-          }
-        }
-      },
-      series: [{
-        name: "Crashes",
-        colorByPoint: true,
-        data: <%= raw @crash_group_data.to_json %>
-      }]
-    });
-
-    $('#crash-group-tags-chart').highcharts({
+    var pie_chart_option = {
       chart: {
         plotBackgroundColor: null,
         plotBorderWidth: null,
@@ -98,10 +65,9 @@
       },
       series: [{
         name: "Crashes",
-        colorByPoint: true,
-        data: <%= raw @crash_group_clouding.to_json %>
+        colorByPoint: true
       }]
-    });
+    };
 
     // Crashes Line Chart
     var crashes_chart_option = {
@@ -123,7 +89,7 @@
         type: 'datetime'
       },
       tooltip: {
-        valueSuffix: ' Crashes'
+        valueSuffix: ' Crashes',
       },
       series: [{
         name: 'Count:  ',
@@ -132,8 +98,13 @@
 
     var renderCrashChart = function(start, end) {
       $('#crashes-date-filter span').html(start.format('MMMM D, YYYY') + ' - ' + end.format('MMMM D, YYYY'));
+      renderCrashLineChart(start, end);
+      renderCrashGroupChart(start, end);
+      renderCrashGroupCloudingChart(start, end);
+    };
 
-      $.ajax('/home/carsh_data', {
+    var renderCrashLineChart = function(start, end) {
+      $.ajax('/home/crash_data', {
         dataType: 'JSON',
         data: {
           from: start.format('YYYY-MM-DD'),
@@ -147,7 +118,41 @@
       .fail(function(data) {
         alert('failed to fetch crashes data');
       })
-    };
+    }
+
+    var renderCrashGroupCloudingChart = function(start, end) {
+      $.ajax('/home/crash_group_clouding', {
+        dataType: 'JSON',
+        data: {
+          from: start.format('YYYY-MM-DD'),
+          to: end.format('YYYY-MM-DD')
+        }
+      })
+      .done(function(data) {
+        pie_chart_option.series[0].data = data;
+        $('#crash-group-tags-chart').highcharts(pie_chart_option);
+      })
+      .fail(function(data) {
+        alert('failed to fetch crashes data');
+      })      
+    }
+
+    var renderCrashGroupChart = function(start, end) {
+      $.ajax('/home/crash_group_data', {
+        dataType: 'JSON',
+        data: {
+          from: start.format('YYYY-MM-DD'),
+          to: end.format('YYYY-MM-DD')
+        }
+      })
+      .done(function(data) {
+        pie_chart_option.series[0].data = data;
+        $('#crash-group-status-chart').highcharts(pie_chart_option);
+      })
+      .fail(function(data) {
+        alert('failed to fetch crashes data');
+      })
+    }
 
     $('#crashes-date-filter').daterangepicker({
         ranges: {
