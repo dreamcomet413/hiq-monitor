@@ -17,14 +17,18 @@ class HomeController < ApplicationController
   end
 
   def crash_data
-    @crashes = Crash.group_by_day(:hockey_created_at, range: @from..@to).count.map do |date, count|
-      crash_group_ids = Crash.where(created_at: date.to_date.beginning_of_day..date.to_date.end_of_day).pluck(:crash_group_id)
-      tags = CrashGroup.where(hockey_id: crash_group_ids).tag_counts_on(:tags).map { |t| {name: t.name, count: t.taggings_count} }
-      [(date.to_f * 1000).to_i, count, tags.to_json]
+    @crashes_data = []
+    @crashes_data << {name: 'All', data: Crash.all.daily_count(@from, @to)}
+    @crashes_data += CrashGroup.where(hockey_created_at: @from..@to).tag_counts_on(:tags).map do |t|
+      tagged_crash_groups = CrashGroup.where(hockey_created_at: @from..@to).tagged_with(t.name)
+      crashes = Crash.where(crash_group_id: tagged_crash_groups.pluck(:hockey_id))
+      { name: t.name, data: crashes.daily_count(@from, @to), visible: false }
     end
-    render json: @crashes
+    
+    render json: @crashes_data
   end
 
+  private
   def get_period
     @from = params[:from] ? Date.parse(params[:from]) : Date.today - 30.days
     @to = params[:to] ? Date.parse(params[:to]) : Date.today
