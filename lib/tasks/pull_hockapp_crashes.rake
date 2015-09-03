@@ -40,7 +40,7 @@ namespace :hockeyapp do
         crash_group.fixed = res.fixed
         crash_group.hockey_updated_at = res.updated_at
         crash_group.hockey_created_at = res.created_at
-        
+        binding.pry
         crash_group.save
 
         if ENV['notify_slack'] != 'false'

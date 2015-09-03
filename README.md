@@ -23,7 +23,7 @@ rake db:create
 rake db:migrate
 rake db:seed
 ```
-- run ```rake hockeyapp:pull_crashes``` after you deploy
+- run ```rake hockeyapp:pull_crashes notify_slack=false``` after you deploy
 
 Documentation and Support
 -------------------------
