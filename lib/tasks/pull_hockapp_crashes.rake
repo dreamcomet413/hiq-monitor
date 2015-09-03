@@ -2,6 +2,8 @@ require 'slack-notifier'
 
 namespace :hockeyapp do
   desc "pull all crashes"
+  @cur_get_minute = nil
+  @cur_numgets_minute = 0
   task :pull_crashes => :environment do |t, args|
     client = HockeyApp.build_client
     app = client.get_apps.first
@@ -10,62 +12,67 @@ namespace :hockeyapp do
 
     if ENV['notify_slack'] != 'false'
       notifier = Slack::Notifier.new ENV['SLACK_AUTH'],       
-                                     channel: ENV['SALCK_CHANNEL'],
+                                     channel: ENV['SLACK_CHANNEL'],
                                      username: ENV['SLACK_USERNAME']
     end
 
-    while true do 
-      crash_groups = client.get_crash_groups app, { per_page: 100, page: page }
-      break if crash_groups.empty?
+    while true do
+      throttleReq()
+      cgs_hockey = client.get_crash_groups app, { per_page: 100, page: page }
+      break if cgs_hockey.empty?
 
       page += 1
 
-      new_ids = crash_groups.map(&:id) - CrashGroup.pluck(:hockey_id)
-      new_crash_groups = crash_groups.select { |cg| new_ids.include? cg.id }
+      new_cg_ids = cgs_hockey.map(&:id) - CrashGroup.pluck(:hockey_id)
+      new_cgs = cgs_hockey.select { |cg| new_cg_ids.include? cg.id }
 
-      new_crash_groups.each do |res|
-        crash_group = CrashGroup.new
-        crash_group.file = res.file
-        crash_group.reason = res.reason
-        crash_group.status = res.status
-        crash_group.hockey_id = res.id
-        crash_group.crash_class = res.crash_class
-        crash_group.bundle_version = res.bundle_version
-        crash_group.last_crash_at = res.last_crash_at
-        crash_group.app_version_id = res.app_version_id
-        crash_group.method = res.method
-        crash_group.bundle_short_version = res.bundle_short_version
-        crash_group.number_of_crashes = res.number_of_crashes
-        crash_group.line = res.line
-        crash_group.fixed = res.fixed
-        crash_group.hockey_updated_at = res.updated_at
-        crash_group.hockey_created_at = res.created_at
-        
-        crash_group.save
+      new_cgs.each do |new_cg|
+        cg = CrashGroup.new
+        cg.file = new_cg.file
+        cg.reason = new_cg.reason
+        cg.status = new_cg.status
+        cg.hockey_id = new_cg.id
+        cg.crash_class = new_cg.crash_class
+        cg.bundle_version = new_cg.bundle_version
+        cg.app_version_id = new_cg.app_version_id
+        cg.method = new_cg.method
+        cg.bundle_short_version = new_cg.bundle_short_version
+        cg.number_of_crashes = 0
+        cg.line = new_cg.line
+        cg.fixed = new_cg.fixed
+        cg.hockey_updated_at = new_cg.updated_at
+        cg.hockey_created_at = new_cg.created_at
+        cg.save
 
         if ENV['notify_slack'] != 'false'
-          notifier.ping "New Crash #{crash.id} has been occured in #{res.id} group.", 
+          link = "https://rink.hockeyapp.net/manage/apps/78249/app_versions/#{cg.app_version_id}/crash_reasons/#{cg.hockey_id}"
+          notifier.ping "New Crash Group (HiQ Monitor ID: #{cg.id}, Hockey ID: <#{link}|#{new_cg.id}>)",
                   icon_url: "http://static.mailchimp.com/web/favicon.png"
         end
 
       end
 
-      crash_groups.each do |res|
-        cpage = 1
-        crash_group = CrashGroup.find_by(hockey_id: res.id)
-        next if res.last_crash_at == crash_group.last_crash_at || res.number_of_crashes == crash_group.number_of_crashes 
+      cgs_hockey.each do |cg_hockey|
+        cg = CrashGroup.find_by(hockey_id: cg_hockey.id)
+        if cg_hockey.number_of_crashes < cg.number_of_crashes
+          raise "ERROR: More crashes in db than available in crash group (HiQ Monitor ID: #{cg.id}, Hockey ID: #{cg_hockey.id})"
+        end
+        next if cg_hockey.last_crash_at == cg.last_crash_at || cg_hockey.number_of_crashes == cg.number_of_crashes 
 
+        cpage = 1
         while true
-          crashes = client.get_crashes_for_crash_group res, { per_page: 100, page: cpage }
+          throttleReq()
+          crashes = client.get_crashes_for_crash_group cg_hockey, { per_page: 100, page: cpage }
           break if crashes.empty?
 
-          new_ids = crashes.map(&:id) - Crash.where(hockey_crash_group_id: res.id).pluck(:hockey_id)
+          new_ids = crashes.map(&:id) - Crash.where(hockey_crash_group_id: cg_hockey.id).pluck(:hockey_id)
           new_crashes = crashes.select { |crash| new_ids.include? crash.id }
-          puts "#{new_crashes.count} crashes in crash_group #{res.id}"
+          puts "#{new_crashes.count} new crashes in crash_group #{cg_hockey.id}"
 
           new_crashes.each do |crash|
+            break if Crash.where(hockey_id:cg_hockey.id).count > 0 # should never hit this condition since we are plucking above
             c_new = Crash.new()
-            c_new.crash_group_id = res.id
+            c_new.crash_group_id = cg_hockey.id
             c_new.hockey_id = crash.id
             c_new.hockey_version_id = crash.app_version_id
             c_new.hockey_crash_group_id = crash.crash_reason_id
@@ -79,18 +86,38 @@ namespace :hockeyapp do
             c_new.user = crash.user_string
             c_new.hockey_updated_at = crash.updated_at
             c_new.hockey_created_at = crash.created_at
-
             c_new.save
+
             if ENV['notify_slack'] != 'false'
-              notifier.ping "New Crash #{crash.id} has been occured in #{res.id} group.", 
+              link = "https://rink.hockeyapp.net/manage/apps/78249/app_versions/#{cg_hockey.app_version_id}/crash_reasons/#{cg_hockey.id}"
+              notifier.ping "New Crash (HiQ Monitor ID: #{crash.id}, Hockey ID: <#{link}|#{cg_hockey.id})>", 
                       icon_url: "http://static.mailchimp.com/web/favicon.png"
             end
           end
+          cg.last_crash_at = cg_hockey.last_crash_at
+          cg.number_of_crashes = Crash.where(hockey_crash_group_id: cg_hockey.id).count
+          cg.save
           cpage += 1
         end
       end
     end
     ended_at = Time.now
     puts "Elapsed seconds: #{(ended_at - started_at).to_i.abs} secs" 
+  end
+
+  def throttleReq()
+    # 60 reqs per minute
+    if @cur_get_minute.nil?
+      @cur_get_minute = Time.now.min
+      @cur_numgets_minute = 0
+    elsif @cur_get_minute != Time.now.min
+      @cur_get_minute = Time.now.min
+      @cur_numgets_minute = 0
+    elsif @cur_numgets_minute >= 58 #2, random margin
+      puts("throttling...")
+      sleep(62 - Time.now.sec) #2, random margin
+    end
+    @cur_numgets_minute += 1
+    return
   end
 end
