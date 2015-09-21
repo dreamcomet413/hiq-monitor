@@ -1,10 +1,5 @@
-#crashes-date-filter {
-  background: #fff;
-  cursor: pointer;
-  padding: 5px 10px;
-  border: 1px solid #ccc;
-  width: 100%;
-}
-.bootstrap-tagsinput input {
-  min-width: 250px;
+#crashes-filter-dropdown {
+  .crashes-filter.active {
+    color: red;
+  }
 }
