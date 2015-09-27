@@ -6,6 +6,7 @@ Rails.application.routes.draw do
 
   resources :crashes
   resources :crash_groups
+  resources :charges
 
   get '/home/crash_data', to: 'home#crash_data'
   get '/home/crash_group_data', to: 'home#crash_group_data'
