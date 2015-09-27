@@ -13,6 +13,7 @@ gem 'jquery-datatables-rails', '~> 3.3.0'
 gem 'whenever', :require => false
 gem 'groupdate'
 gem 'acts-as-taggable-on', '~> 3.4'
+gem 'stripe', :git => 'https://github.com/stripe/stripe-ruby'
 
 group :development, :test do
   gem 'byebug'
